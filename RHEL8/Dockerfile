@@ -129,7 +129,7 @@ RUN id student  &>/dev/null || useradd -m -s /bin/bash student && \
     echo "%wheel ALL=(ALL) ALL" >> /etc/sudoers
 
 # ── 5. Shell environment ──────────────────────────────────────────────────────
-RUN echo 'PS1="[\u@nazhat-lab \W]\$ "' >> /etc/bashrc && \
+RUN echo 'PS1="[\u@nazhat-lab \W]\\$ "' >> /etc/bashrc && \
     echo 'alias ll="ls -lah --color=auto"' >> /etc/bashrc && \
     echo 'alias grep="grep --color=auto"'  >> /etc/bashrc
 
