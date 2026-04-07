@@ -18,28 +18,35 @@ nazhat-lab/
 
 ## 🚀 Quick Start
 
-### Build
+### 1. Pull
+```bash
+docker pull nazdridoy/nazhat-lab:rhel8
+docker pull nazdridoy/nazhat-lab:rhel9
+```
 
+### 2. Build & Push (Local)
 ```bash
 # RHEL 8
-docker build -t nazhat-lab:rhel8 ./RHEL8
+docker build -t nazdridoy/nazhat-lab:rhel8 ./RHEL8
+docker push nazdridoy/nazhat-lab:rhel8
 
 # RHEL 9
-docker build -t nazhat-lab:rhel9 ./RHEL9
+docker build -t nazdridoy/nazhat-lab:rhel9 ./RHEL9
+docker push nazdridoy/nazhat-lab:rhel9
 ```
 
 ### Run — interactive shell
 
 ```bash
-docker run -it --rm nazhat-lab:rhel8
+docker run -it --rm nazdridoy/nazhat-lab:rhel8
 # or
-docker run -it --rm nazhat-lab:rhel9
+docker run -it --rm nazdridoy/nazhat-lab:rhel9
 ```
 
 ### Run — with SSH access (mirrors real lab workflow)
 
 ```bash
-docker run -d -p 2222:22 --name rh124-lab nazhat-lab:rhel8
+docker run -d -p 2222:22 --name rh124-lab nazdridoy/nazhat-lab:rhel8
 ssh student@localhost -p 2222          # password: student
 ssh root@localhost    -p 2222          # password: redhat
 ```
@@ -83,5 +90,5 @@ ssh root@localhost    -p 2222          # password: redhat
 
 ```bash
 docker stop rh124-lab && docker rm rh124-lab
-docker rmi nazhat-lab:rhel8 nazhat-lab:rhel9
+docker rmi nazdridoy/nazhat-lab:rhel8 nazdridoy/nazhat-lab:rhel9
 ```
