@@ -116,7 +116,8 @@ RUN ssh-keygen -A && \
     sed -i \
     -e 's/^#PermitRootLogin.*/PermitRootLogin yes/' \
     -e 's/^#PasswordAuthentication.*/PasswordAuthentication yes/' \
-    /etc/ssh/sshd_config
+    /etc/ssh/sshd_config && \
+    systemctl enable sshd
 
 # ── 4. Create course users (mirrors RH124 lab accounts) ──────────────────────
 RUN id student  &>/dev/null || useradd -m -s /bin/bash student && \
@@ -128,22 +129,30 @@ RUN id student  &>/dev/null || useradd -m -s /bin/bash student && \
     echo "operator:operator"   | chpasswd && \
     echo "%wheel ALL=(ALL) ALL" >> /etc/sudoers
 
-# ── 5. Shell environment ──────────────────────────────────────────────────────
+# ── 5. Mask systemd units that don't apply inside a container ────────────────
+# These units fail or spam logs in containerized environments.
+RUN systemctl mask \
+    dev-hugepages.mount \
+    sys-fs-fuse-connections.mount \
+    systemd-update-utmp.service \
+    systemd-tmpfiles-setup-dev.service \
+    systemd-udev-trigger.service \
+    systemd-udevd.service \
+    getty.target \
+    console-getty.service \
+    getty@tty1.service
+
+# ── 6. Shell environment ──────────────────────────────────────────────────────
 RUN echo 'PS1="[\u@nazhat-lab \W]\\$ "' >> /etc/bashrc && \
     echo 'alias ll="ls -lah --color=auto"' >> /etc/bashrc && \
     echo 'alias grep="grep --color=auto"'  >> /etc/bashrc
 
-# ── 6. Expose SSH port ────────────────────────────────────────────────────────
+# ── 7. Container settings ─────────────────────────────────────────────────────
 EXPOSE 22
-
-# ── 7. Default working directory ──────────────────────────────────────────────
 WORKDIR /home/student
 
-# ── 8. Default user ──────────────────────────────────────────────────────────
-# Container runs as root so it can start services without sudo
-USER root
-
-# ── 9. Entrypoint ─────────────────────────────────────────────────────────────
-# Start sshd in background as root, then hand over to student interactive shell
-# If no TTY is attached (e.g. docker run -d), run sshd in foreground to keep container alive
-CMD ["/bin/bash", "-c", "if [ -t 0 ]; then /usr/sbin/sshd && exec su - student; else exec /usr/sbin/sshd -D; fi"]
+# ── 8. Entrypoint ─────────────────────────────────────────────────────────────
+# Run systemd as PID 1 — enables systemctl, hostnamectl, firewall-cmd, etc.
+# sshd starts automatically via the enabled unit (see step 3).
+STOPSIGNAL SIGRTMIN+3
+CMD ["/sbin/init"]
