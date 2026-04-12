@@ -101,8 +101,8 @@ docker run -d --privileged -p 3333:22 --name nazhat8 nazdridoy/nazhat-lab:rhel8
 Podman includes native systemd support (`--systemd=true`).
 
 ```bash
-podman run -d --systemd=true --cap-add NET_ADMIN -p 2222:22 --name nazhat9 nazdridoy/nazhat-lab:rhel9
-podman run -d --systemd=true --cap-add NET_ADMIN -p 3333:22 --name nazhat8 nazdridoy/nazhat-lab:rhel8
+podman run -d --privileged -p 2222:22 --name nazhat9 nazdridoy/nazhat-lab:rhel9
+podman run -d --privileged -p 3333:22 --name nazhat8 nazdridoy/nazhat-lab:rhel8
 ```
 
 ### Accessing the Container
