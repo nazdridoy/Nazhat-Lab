@@ -95,10 +95,6 @@ RUN dnf install -y --allowerasing \
     lsof \
     # ── systemd ───────────────────────────────────────────────────────────
     systemd \
-    # ── SELinux tools ─────────────────────────────────────────────────────
-    policycoreutils \
-    policycoreutils-python-utils \
-    setools-console \
     # ── Firewall ──────────────────────────────────────────────────────────
     firewalld \
     # ── Containers (introductory chapter) ────────────────────────────────
@@ -111,7 +107,11 @@ RUN dnf install -y --allowerasing \
     sos \
     && dnf clean all
 
-# ── 3. Configure SSH ─────────────────────────────────────────────────────────
+# ── 3. Disable SELinux (not functional in containers; causes sshd/PAM failures
+#       on non-SELinux kernels such as Docker Desktop on Windows) ─────────────
+RUN sed -i 's/^SELINUX=.*/SELINUX=disabled/' /etc/selinux/config
+
+# ── 4. Configure SSH ─────────────────────────────────────────────────────────
 RUN ssh-keygen -A && \
     sed -i \
     -e 's/^#PermitRootLogin.*/PermitRootLogin yes/' \
@@ -119,7 +119,7 @@ RUN ssh-keygen -A && \
     /etc/ssh/sshd_config && \
     systemctl enable sshd
 
-# ── 4. Create course users (mirrors RH124 lab accounts) ──────────────────────
+# ── 5. Create course users (mirrors RH124 lab accounts) ──────────────────────
 RUN { id student  &>/dev/null || useradd -m -s /bin/bash student; } && \
     { id operator &>/dev/null || useradd -m -s /bin/bash operator; } && \
     usermod -s /bin/bash operator && \
@@ -129,7 +129,7 @@ RUN { id student  &>/dev/null || useradd -m -s /bin/bash student; } && \
     echo "operator:operator"   | chpasswd && \
     echo "%wheel ALL=(ALL) ALL" >> /etc/sudoers
 
-# ── 5. Mask systemd units that don't apply inside a container ────────────────
+# ── 6. Mask systemd units that don't apply inside a container ────────────────
 # These units fail or spam logs in containerized environments.
 RUN systemctl mask \
     dev-hugepages.mount \
@@ -142,7 +142,7 @@ RUN systemctl mask \
     console-getty.service \
     getty@tty1.service
 
-# ── 6. Default hostname ──────────────────────────────────────────────────────
+# ── 7. Default hostname ──────────────────────────────────────────────────────
 # Disable NM hostname management and use a oneshot service to set the 
 # kernel hostname, overriding Docker's /etc/hostname bind-mount at boot.
 RUN mkdir -p /etc/NetworkManager/conf.d && \
@@ -152,16 +152,16 @@ RUN printf '[Unit]\nDescription=Set default hostname\nAfter=sysinit.target\nBefo
     > /etc/systemd/system/nazhat-hostname.service \
     && systemctl enable nazhat-hostname.service
 
-# ── 7. Shell environment ──────────────────────────────────────────────────────
+# ── 8. Shell environment ──────────────────────────────────────────────────────
 RUN echo 'PS1="[\u@\h \W]\\$ "' >> /etc/bashrc && \
     echo 'alias ll="ls -lah --color=auto"' >> /etc/bashrc && \
     echo 'alias grep="grep --color=auto"'  >> /etc/bashrc
 
-# ── 7. Container settings ─────────────────────────────────────────────────────
+# ── 9. Container settings ─────────────────────────────────────────────────────
 EXPOSE 22
 WORKDIR /home/student
 
-# ── 8. Entrypoint ─────────────────────────────────────────────────────────────
+# ── 10. Entrypoint ────────────────────────────────────────────────────────────
 # Run systemd as PID 1 — enables systemctl, hostnamectl, firewall-cmd, etc.
 # sshd starts automatically via the enabled unit (see step 3).
 STOPSIGNAL SIGRTMIN+3

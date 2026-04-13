@@ -1,8 +1,4 @@
-# Nazhat-Lab
-
-RH124 practice environment provided as a Docker/Podman sandbox. Emulates the Red Hat System Administration I (RH124) lab environment for both RHEL 8 and RHEL 9.
-
-The containers run systemd as PID 1. Tools like `systemctl`, `hostnamectl`, `firewall-cmd`, and `journalctl` function as they would on a standard RHEL system.
+RH124 practice environment provided as a Docker/Podman sandbox. Emulates the Red Hat System Administration I (RH124) lab environment for RHEL 8.
 
 ---
 
@@ -12,8 +8,6 @@ The containers run systemd as PID 1. Tools like `systemctl`, `hostnamectl`, `fir
 nazhat-lab/
 ├── RHEL8/
 │   └── Dockerfile          # AlmaLinux 8 (RHEL 8 binary-compatible)
-├── RHEL9/
-│   └── Dockerfile          # AlmaLinux 9 (RHEL 9 binary-compatible)
 └── docker-compose.yml      # Recommended run configuration
 ```
 
@@ -26,27 +20,16 @@ nazhat-lab/
 ```bash
 # Latest
 docker pull nazdridoy/nazhat-lab:rhel8
-docker pull nazdridoy/nazhat-lab:rhel9
 
 # Specific version
 docker pull nazdridoy/nazhat-lab:rhel8-v1.0
-docker pull nazdridoy/nazhat-lab:rhel9-v1.0
 ```
 
 ### 2. Build & Push
 
-Builds apply two tags: a floating `:rhelX` and a pinned `:rhelX-vX.Y`. Update the `VER` variable when modifying the Dockerfile.
+Builds apply two tags: a floating `:rhel8` and a pinned `:rhel8-vX.Y`. Update the `VER` variable when modifying the Dockerfile.
 
 ```bash
-# RHEL 9
-VER=1.0
-docker build \
-  -t nazdridoy/nazhat-lab:rhel9 \
-  -t nazdridoy/nazhat-lab:rhel9-v${VER} \
-  ./RHEL9
-docker push nazdridoy/nazhat-lab:rhel9
-docker push nazdridoy/nazhat-lab:rhel9-v${VER}
-
 # RHEL 8
 VER=1.0
 docker build \
@@ -68,13 +51,10 @@ Running systemd as PID 1 requires specific flags for cgroup management. Docker C
 `docker-compose.yml` provides the intended configuration out-of-the-box.
 
 ```bash
-# Start RHEL 9
-docker compose up -d rhel9
-
 # Start RHEL 8
 docker compose up -d rhel8
 
-# Start both
+# Start
 docker compose up -d
 
 # Stop and remove
@@ -83,17 +63,13 @@ docker compose down
 
 | Service | SSH port |
 |---------|----------|
-| `rhel9` | `2222`   |
-| `rhel8` | `3333`   |
+| `rhel8` | `2222`   |
 
 ### Alternative: Plain Docker
 
 ```bash
-# RHEL 9
-docker run -d --privileged -p 2222:22 --name nazhat9 nazdridoy/nazhat-lab:rhel9
-
 # RHEL 8
-docker run -d --privileged -p 3333:22 --name nazhat8 nazdridoy/nazhat-lab:rhel8
+docker run -d --privileged -p 2222:22 --name nazhat8 nazdridoy/nazhat-lab:rhel8
 ```
 
 ### Alternative: Podman
@@ -101,8 +77,7 @@ docker run -d --privileged -p 3333:22 --name nazhat8 nazdridoy/nazhat-lab:rhel8
 Podman includes native systemd support (`--systemd=true`).
 
 ```bash
-podman run -d --privileged -p 2222:22 --name nazhat9 nazdridoy/nazhat-lab:rhel9
-podman run -d --privileged -p 3333:22 --name nazhat8 nazdridoy/nazhat-lab:rhel8
+podman run -d --privileged -p 2222:22 --name nazhat8 nazdridoy/nazhat-lab:rhel8
 ```
 
 ### Accessing the Container
@@ -117,9 +92,9 @@ ssh root@localhost    -p 2222   # Password: redhat
 **Via Shell:**
 
 ```bash
-docker exec -it nazhat9 bash
+docker exec -it nazhat8 bash
 # or
-podman exec -it nazhat9 bash
+podman exec -it nazhat8 bash
 ```
 
 ---
@@ -178,10 +153,12 @@ The following systemd units are masked during build to suppress container-irrele
 | Remote Access | `openssh-server`, `openssh-clients` |
 | Storage | `parted`, `util-linux`, `lsof` |
 | Init System | `systemd` |
-| Security Contexts | `policycoreutils`, `policycoreutils-python-utils`, `setools-console` |
 | Firewall | `firewalld` |
 | Emulation Base | `podman` |
 | Diagnostics | `hostname`, `which`, `bash-completion`, `time`, `sos` |
+
+> [!NOTE] 
+> SELinux is explicitly **disabled** in these images to ensure compatibility with non-SELinux kernels (like Docker Desktop on Windows). See [NOTES.md](./NOTES.md) for details.
 
 ---
 
@@ -203,14 +180,14 @@ docker compose down --rmi local
 
 ```bash
 # Stop and remove containers
-docker stop nazhat9 nazhat8 && docker rm nazhat9 nazhat8
+docker stop nazhat8 && docker rm nazhat8
 # or
-podman stop nazhat9 nazhat8 && podman rm nazhat9 nazhat8
+podman stop nazhat8 && podman rm nazhat8
 
 # Remove images
-docker rmi nazdridoy/nazhat-lab:rhel8 nazdridoy/nazhat-lab:rhel9
+docker rmi nazdridoy/nazhat-lab:rhel8
 # or
-podman rmi nazdridoy/nazhat-lab:rhel8 nazdridoy/nazhat-lab:rhel9
+podman rmi nazdridoy/nazhat-lab:rhel8
 ```
 
 ---

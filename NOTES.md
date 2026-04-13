@@ -51,9 +51,13 @@ AlmaLinux (and most container images) sets `tsflags=nodocs` in `/etc/dnf/dnf.con
 
 ---
 
-## SELinux Reality
+## SELinux (Disabled for Compatibility)
 
-The images include `policycoreutils` and `setools-console` for practicing commands (`semanage`, `getsebool`, etc.). However, SELinux is a kernel feature. Enforcement happens at the host level, not within the container's isolated view. Tools can manipulate policy files, but the "Enforcing" status reflects the host's actual state.
+The images have SELinux explicitly **disabled** in `/etc/selinux/config`. 
+
+- **Why?**: Core binaries like `sshd` and PAM modules are SELinux-aware. On kernels where SELinux is not available (such as Docker Desktop on Windows/Mac or standard WSL2), these binaries may attempt `setcon()` syscalls that fail with `Permission denied`, causing fatal crashes during login.
+- **Removed Tools**: SELinux administration tools (`policycoreutils`, etc.) have been removed to reduce complexity and avoid confusion, as they cannot function without an SELinux-enabled kernel.
+- **Practice Implications**: While you cannot practice SELinux labeling or policy enforcement in this sandbox, this ensures the environment remains stable and accessible across all operating systems.
 
 ---
 
@@ -69,22 +73,21 @@ The images include `policycoreutils` and `setools-console` for practicing comman
 
 ---
 
-## CRB / PowerTools — name differs by version
+## CRB / PowerTools
 
 - **RHEL 8:** `dnf config-manager --set-enabled powertools`
-- **RHEL 9:** `/usr/bin/crb enable` (ships with `epel-release`)
 
 ---
 
 ## AlmaLinux vs UBI
 
-UBI (`ubi8`/`ubi9`) has a stripped repo — `podman`, `firewalld`, `setools-console`, `nmap`, etc. are missing or subscription-gated. AlmaLinux has the full repo.
+UBI (`ubi8`) has a stripped repo — `podman`, `firewalld`, `setools-console`, `nmap`, etc. are missing or subscription-gated. AlmaLinux has the full repo.
 
 ---
 
 ## `operator` user guard
 
-AlmaLinux 9 may ship a system `operator` account. Both Dockerfiles guard with `id operator &>/dev/null || useradd ...` to avoid a build-time duplicate-user error.
+AlmaLinux ships a system `operator` account. The Dockerfile guards with `id operator &>/dev/null || useradd ...` to avoid a build-time duplicate-user error.
 
 ---
 
@@ -118,5 +121,4 @@ systemd ignores `SIGTERM`. `SIGRTMIN+3` triggers a clean shutdown (`systemctl po
 
 | Service | Host port |
 |---|---|
-| `rhel9` | `2222` |
-| `rhel8` | `3333` |
+| `rhel8` | `2222` |

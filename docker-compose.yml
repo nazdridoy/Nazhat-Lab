@@ -5,26 +5,12 @@
 # all work exactly as on a real RHEL machine.
 #
 # Usage:
-#   docker compose up -d rhel9          # start RHEL 9 only
-#   docker compose up -d rhel8          # start RHEL 8 only
-#   docker compose up -d                # start both
+#   docker compose up -d rhel8          # start RHEL 8
+#   docker compose up -d                # start
 #   docker compose down                 # stop & remove
 # ============================================================
 
 services:
-
-  # ── RHEL 9 (AlmaLinux 9) ─────────────────────────────────
-  rhel9:
-    image: nazdridoy/nazhat-lab:rhel9
-    build:
-      context: ./RHEL9
-    container_name: nazhat9
-    # privileged is required for systemd as PID 1 to manage cgroups.
-    # This is a local study lab — not a production deployment.
-    privileged: true
-    ports:
-      - "2222:22" # ssh student@localhost -p 2222
-    restart: unless-stopped
 
   # ── RHEL 8 (AlmaLinux 8) ─────────────────────────────────
   rhel8:
@@ -34,5 +20,5 @@ services:
     container_name: nazhat8
     privileged: true
     ports:
-      - "3333:22" # ssh student@localhost -p 3333
+      - "2222:22" # ssh student@localhost -p 2222
     restart: unless-stopped
