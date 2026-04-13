@@ -122,3 +122,21 @@ systemd ignores `SIGTERM`. `SIGRTMIN+3` triggers a clean shutdown (`systemctl po
 | Service | Host port |
 |---|---|
 | `rhel8` | `2222` |
+
+---
+
+## `/etc/shadow` Permissions — SSH Password Auth Failure
+
+**Symptom**: SSH password authentication fails with `Permission denied` (or PAM reports "user unknown") when running the container on Debian/Ubuntu-based hosts, Linux Mint, or any environment with a hardened Seccomp profile.
+
+**Root cause**: AlmaLinux / RHEL `shadow-utils` creates `/etc/shadow` with permissions `0000` (no read access for anyone) by design. On bare-metal this is safe because the PAM helper binary `unix_chkpwd` carries the **SUID** bit and always executes as `root`, so it can read the shadow file regardless of its permissions.
+
+Inside containers, many Docker hosts (Debian/Ubuntu kernels, Linux Mint, Docker Desktop with strict Seccomp) **strip the SUID bit** from container binaries. Without the SUID bit, `unix_chkpwd` runs as the unprivileged calling user and cannot open a `0000` shadow file — PAM reports authentication failure and SSH refuses the login.
+
+**Fix applied**:
+
+```dockerfile
+chmod 0600 /etc/shadow
+```
+
+`0600` keeps the file readable **only by root** (matching RHEL bare-metal defaults on many real systems) while guaranteeing that any root-level process — including `unix_chkpwd` running as root after losing its SUID bit — can still read it. This makes SSH password authentication work reliably across all Docker host environments.

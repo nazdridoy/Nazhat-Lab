@@ -127,7 +127,16 @@ RUN { id student  &>/dev/null || useradd -m -s /bin/bash student; } && \
     echo "root:redhat"         | chpasswd && \
     echo "student:student"     | chpasswd && \
     echo "operator:operator"   | chpasswd && \
-    echo "%wheel ALL=(ALL) ALL" >> /etc/sudoers
+    echo "%wheel ALL=(ALL) ALL" >> /etc/sudoers && \
+    # AlmaLinux/RHEL shadow-utils sets /etc/shadow to 0000 by default.
+    # On bare-metal this is fine because unix_chkpwd has the SUID bit and
+    # always runs as root. Inside containers, however, many Docker hosts
+    # (Debian/Ubuntu-based, Linux Mint, hardened Seccomp profiles) strip the
+    # SUID bit — so unix_chkpwd cannot read a 0000 shadow file and PAM
+    # reports "user unknown", causing SSH password auth to fail.
+    # Setting 0600 keeps the file root-only while guaranteeing root-level
+    # processes (like unix_chkpwd running as root) can always read it.
+    chmod 0600 /etc/shadow
 
 # ── 6. Mask systemd units that don't apply inside a container ────────────────
 # These units fail or spam logs in containerized environments.
