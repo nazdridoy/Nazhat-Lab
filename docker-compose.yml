@@ -1,14 +1,9 @@
-# ============================================================
 # Nazhat-Lab — Docker Compose
-# Runs systemd as PID 1 inside the container so that
-# systemctl, hostnamectl, firewall-cmd, journalctl, etc.
-# all work exactly as on a real RHEL machine.
 #
 # Usage:
-#   docker compose up -d rhel8          # start RHEL 8
-#   docker compose up -d                # start
-#   docker compose down                 # stop & remove
-# ============================================================
+#   docker compose up -d --scale rhel8=3   # start 3 RHEL 8 containers
+#   docker compose ps                      # show containers & their SSH ports
+#   docker compose down                    # stop & remove all
 
 services:
 
@@ -17,8 +12,7 @@ services:
     image: nazdridoy/nazhat-lab:rhel8
     build:
       context: ./RHEL8
-    container_name: nazhat8
     privileged: true
     ports:
-      - "2222:22" # ssh student@localhost -p 2222
+      - "127.0.0.1::22"   # Docker picks a free host port; use `docker compose ps` to find it
     restart: unless-stopped

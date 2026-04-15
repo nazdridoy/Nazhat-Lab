@@ -49,27 +49,49 @@ Running systemd as PID 1 requires specific flags for cgroup management. Docker C
 ### Recommended: Docker Compose
 
 `docker-compose.yml` provides the intended configuration out-of-the-box.
+Each container gets a Docker-assigned ephemeral host port for SSH.
+
+**Single container:**
 
 ```bash
-# Start RHEL 8
-docker compose up -d rhel8
-
-# Start
 docker compose up -d
-
-# Stop and remove
-docker compose down
 ```
 
-| Service | SSH port |
-|---------|----------|
-| `rhel8` | `2222`   |
+**Multiple containers (e.g. 3 × RHEL 8):**
+
+```bash
+docker compose up -d --scale rhel8=3
+```
+
+**List containers and their SSH ports:**
+
+```bash
+docker compose ps
+```
+
+Example output:
+
+```
+NAME                  STATUS    PORTS
+nazhat-lab-rhel8-1    Up        127.0.0.1:32768->22/tcp
+nazhat-lab-rhel8-2    Up        127.0.0.1:32769->22/tcp
+nazhat-lab-rhel8-3    Up        127.0.0.1:32770->22/tcp
+```
+
+**Stop and remove all containers:**
+
+```bash
+docker compose down
+```
 
 ### Alternative: Plain Docker
 
 ```bash
-# RHEL 8
+# RHEL 8 (single, fixed port)
 docker run -d --privileged -p 2222:22 --name nazhat8 nazdridoy/nazhat-lab:rhel8
+
+# RHEL 8 (dynamic port — lettng Docker pick)
+docker run -d --privileged -p 127.0.0.1::22 nazdridoy/nazhat-lab:rhel8
 ```
 
 ### Alternative: Podman
@@ -77,24 +99,22 @@ docker run -d --privileged -p 2222:22 --name nazhat8 nazdridoy/nazhat-lab:rhel8
 Podman includes native systemd support (`--systemd=true`).
 
 ```bash
-podman run -d --privileged -p 2222:22 --name nazhat8 nazdridoy/nazhat-lab:rhel8
+podman run -d --privileged -p 127.0.0.1::22 nazdridoy/nazhat-lab:rhel8
 ```
 
 ### Accessing the Container
 
-**Via SSH:**
+**Via SSH** — use the host port shown in `docker compose ps`:
 
 ```bash
-ssh student@localhost -p 2222   # Password: student
-ssh root@localhost    -p 2222   # Password: redhat
+ssh student@localhost -p <host-port>   # Password: student
+ssh root@localhost    -p <host-port>   # Password: redhat
 ```
 
-**Via Shell:**
+**Via Shell** — use the container name shown in `docker compose ps`:
 
 ```bash
-docker exec -it nazhat8 bash
-# or
-podman exec -it nazhat8 bash
+docker exec -it <container-name> bash
 ```
 
 ---
@@ -179,10 +199,10 @@ docker compose down --rmi local
 **If using Plain Docker or Podman:**
 
 ```bash
-# Stop and remove containers
-docker stop nazhat8 && docker rm nazhat8
+# Stop and remove a container (use the name from `docker ps`)
+docker stop <container-name> && docker rm <container-name>
 # or
-podman stop nazhat8 && podman rm nazhat8
+podman stop <container-name> && podman rm <container-name>
 
 # Remove images
 docker rmi nazdridoy/nazhat-lab:rhel8
