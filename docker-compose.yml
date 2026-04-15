@@ -1,9 +1,12 @@
 # Nazhat-Lab — Docker Compose
 #
 # Usage:
-#   docker compose up -d --scale rhel8=3   # start 3 RHEL 8 containers
-#   docker compose ps                      # show containers & their SSH ports
-#   docker compose down                    # stop & remove all
+#   docker compose up -d               # start 1 container  → ssh -p 2222
+#   docker compose up -d --scale rhel8=3  # start 3 containers → ports 2222-2224
+#   docker compose ps                  # show containers & assigned SSH ports
+#   docker compose down                # stop & remove all
+#
+# Port range 2222-2321 allows up to 100 simultaneous containers.
 
 services:
 
@@ -14,5 +17,7 @@ services:
       context: ./RHEL8
     privileged: true
     ports:
-      - "127.0.0.1::22"   # Docker picks a free host port; use `docker compose ps` to find it
+      # Replicas claim sequential ports starting at 2222 (2222, 2223, 2224 …)
+      # Range of 100 is effectively unlimited for any lab scenario.
+      - "127.0.0.1:2222-2321:22"
     restart: unless-stopped

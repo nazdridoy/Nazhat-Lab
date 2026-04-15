@@ -119,9 +119,9 @@ systemd ignores `SIGTERM`. `SIGRTMIN+3` triggers a clean shutdown (`systemctl po
 
 `PermitRootLogin yes` and `PasswordAuthentication yes` are set in `sshd_config` at build time. Lab-only — don't expose these ports.
 
-| Service | Host port |
+| Service | SSH ports |
 |---|---|
-| `rhel8` | `2222` |
+| `rhel8` | `2222` – `2321` (sequential per replica) |
 
 ---
 

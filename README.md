@@ -49,7 +49,7 @@ Running systemd as PID 1 requires specific flags for cgroup management. Docker C
 ### Recommended: Docker Compose
 
 `docker-compose.yml` provides the intended configuration out-of-the-box.
-Each container gets a Docker-assigned ephemeral host port for SSH.
+Containers are assigned sequential SSH ports starting at `2222` (supports up to 100 simultaneous containers).
 
 **Single container:**
 
@@ -73,9 +73,9 @@ Example output:
 
 ```
 NAME                  STATUS    PORTS
-nazhat-lab-rhel8-1    Up        127.0.0.1:32768->22/tcp
-nazhat-lab-rhel8-2    Up        127.0.0.1:32769->22/tcp
-nazhat-lab-rhel8-3    Up        127.0.0.1:32770->22/tcp
+nazhat-lab-rhel8-1    Up        127.0.0.1:2222->22/tcp
+nazhat-lab-rhel8-2    Up        127.0.0.1:2223->22/tcp
+nazhat-lab-rhel8-3    Up        127.0.0.1:2224->22/tcp
 ```
 
 **Stop and remove all containers:**
@@ -104,11 +104,11 @@ podman run -d --privileged -p 127.0.0.1::22 nazdridoy/nazhat-lab:rhel8
 
 ### Accessing the Container
 
-**Via SSH** — use the host port shown in `docker compose ps`:
+**Via SSH** — first container is always `2222`, second is `2223`, and so on:
 
 ```bash
-ssh student@localhost -p <host-port>   # Password: student
-ssh root@localhost    -p <host-port>   # Password: redhat
+ssh student@localhost -p 2222   # 1st container — Password: student
+ssh root@localhost    -p 2223   # 2nd container — Password: redhat
 ```
 
 **Via Shell** — use the container name shown in `docker compose ps`:
