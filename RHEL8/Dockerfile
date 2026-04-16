@@ -47,6 +47,7 @@ RUN dnf install -y --allowerasing \
     # ── Manual pages ──────────────────────────────────────────────────────
     man-db \
     man-pages \
+    pinfo \
     # ── File & directory management ───────────────────────────────────────
     coreutils \
     findutils \
@@ -95,6 +96,7 @@ RUN dnf install -y --allowerasing \
     lsof \
     # ── systemd ───────────────────────────────────────────────────────────
     systemd \
+    rsyslog \
     # ── Firewall ──────────────────────────────────────────────────────────
     firewalld \
     # ── Containers (introductory chapter) ────────────────────────────────
@@ -151,7 +153,18 @@ RUN systemctl mask \
     console-getty.service \
     getty@tty1.service
 
-# ── 7. Default hostname ──────────────────────────────────────────────────────
+# ── 7. Enable rsyslog & pre-create standard log files ───────────────────────
+# rsyslog only appends to files that already exist; pre-touch them so
+# /var/log/secure, /var/log/messages, etc. are present from first boot.
+RUN systemctl enable rsyslog && \
+    touch /var/log/messages \
+          /var/log/secure \
+          /var/log/maillog \
+          /var/log/cron \
+          /var/log/boot.log && \
+    chmod 600 /var/log/secure
+
+# ── 8. Default hostname ──────────────────────────────────────────────────────
 # Disable NM hostname management and use a oneshot service to set the 
 # kernel hostname, overriding Docker's /etc/hostname bind-mount at boot.
 RUN mkdir -p /etc/NetworkManager/conf.d && \
