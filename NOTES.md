@@ -140,3 +140,11 @@ chmod 0600 /etc/shadow
 ```
 
 `0600` keeps the file readable **only by root** (matching RHEL bare-metal defaults on many real systems) while guaranteeing that any root-level process — including `unix_chkpwd` running as root after losing its SUID bit — can still read it. This makes SSH password authentication work reliably across all Docker host environments.
+
+---
+
+## NTP & Time Synchronization (`timedatectl`)
+
+- **Package Requirement**: `timedatectl set-ntp true` requires a supported NTP service. We install `chrony` (RHEL 8 default) and enable `chronyd.service` to satisfy this dependency.
+- **Container Behavior**: In a container, `timedatectl set-ntp true` will logistically succeed (enabling the unit via DBus), but the `chronyd` service may fail to synchronize the actual system clock unless the container is run with `--privileged` or `CAP_SYS_TIME`.
+- **RH124 Lab Practice**: This setup is specifically provided to allow students to practice the syntax and logic of the `timedatectl` command as taught in the RH124 course, even if hardware-level clock synchronization is restricted by the container host.

@@ -94,9 +94,10 @@ RUN dnf install -y --allowerasing \
     # ── Storage & filesystem ──────────────────────────────────────────────
     parted \
     lsof \
-    # ── systemd ───────────────────────────────────────────────────────────
+    # ── systemd & Logging ─────────────────────────────────────────────────
     systemd \
     rsyslog \
+    chrony \
     # ── Firewall ──────────────────────────────────────────────────────────
     firewalld \
     # ── Containers (introductory chapter) ────────────────────────────────
@@ -153,10 +154,10 @@ RUN systemctl mask \
     console-getty.service \
     getty@tty1.service
 
-# ── 7. Enable rsyslog & pre-create standard log files ───────────────────────
+# ── 7. Enable system services & pre-create standard log files ───────────────
 # rsyslog only appends to files that already exist; pre-touch them so
 # /var/log/secure, /var/log/messages, etc. are present from first boot.
-RUN systemctl enable rsyslog && \
+RUN systemctl enable rsyslog chronyd && \
     touch /var/log/messages \
           /var/log/secure \
           /var/log/maillog \

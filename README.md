@@ -140,6 +140,8 @@ hostnamectl set-hostname nazhat-lab.example.com
 systemctl start firewalld
 systemctl enable --now sshd
 firewall-cmd --add-service=http --permanent
+timedatectl set-timezone Asia/Dhaka
+timedatectl set-ntp true
 journalctl -xe
 ```
 
@@ -172,7 +174,7 @@ The following systemd units are masked during build to suppress container-irrele
 | Users | `shadow-utils`, `sudo`, `passwd` |
 | Remote Access | `openssh-server`, `openssh-clients` |
 | Storage | `parted`, `util-linux`, `lsof` |
-| Init System | `systemd` |
+| Init & Logging | `systemd`, `rsyslog`, `chrony` |
 | Firewall | `firewalld` |
 | Emulation Base | `podman` |
 | Diagnostics | `hostname`, `which`, `bash-completion`, `time`, `sos` |
