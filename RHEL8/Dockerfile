@@ -97,6 +97,7 @@ RUN dnf install -y --allowerasing \
     # ── systemd & Logging ─────────────────────────────────────────────────
     systemd \
     rsyslog \
+    logrotate \
     chrony \
     # ── Firewall ──────────────────────────────────────────────────────────
     firewalld \

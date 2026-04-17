@@ -31,7 +31,7 @@ Builds apply two tags: a floating `:rhel8` and a pinned `:rhel8-vX.Y`. Update th
 
 ```bash
 # RHEL 8
-VER=1.0
+VER=1.1
 docker build \
   -t nazdridoy/nazhat-lab:rhel8 \
   -t nazdridoy/nazhat-lab:rhel8-v${VER} \
@@ -174,7 +174,7 @@ The following systemd units are masked during build to suppress container-irrele
 | Users | `shadow-utils`, `sudo`, `passwd` |
 | Remote Access | `openssh-server`, `openssh-clients` |
 | Storage | `parted`, `util-linux`, `lsof` |
-| Init & Logging | `systemd`, `rsyslog`, `chrony` |
+| Init & Logging | `systemd`, `rsyslog`, `logrotate`, `chrony` |
 | Firewall | `firewalld` |
 | Emulation Base | `podman` |
 | Diagnostics | `hostname`, `which`, `bash-completion`, `time`, `sos` |
